@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import TeamMembership, User, MembershipRole
+from app.models import TeamMembership, User, MembershipRole, Note
 
 DbSession = Annotated[Session, Depends(get_db)]
 def get_current_user(
@@ -56,3 +56,18 @@ def require_team_membership(
             detail="Your team role does not permit this action",
         )
     return membership
+
+def get_note_for_member(db: Session, *, note_id: UUID, user_id: UUID) -> Note:
+    note = db.get(Note, note_id)
+    if note is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
+
+    membership = db.scalar(
+        select(TeamMembership).where(
+            TeamMembership.team_id == note.team_id,
+            TeamMembership.user_id == user_id,
+        )
+    )
+    if membership is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
+    return note
