@@ -91,8 +91,8 @@ def list_notes(
     if query and (normalized_query := query.strip()):
         filters.append(
             or_(
-                Note.title.contains(normalized_query, autoescape=True),
-                Note.body.contains(normalized_query, autoescape=True),
+                Note.title.icontains(normalized_query, autoescape=True),
+                Note.body.icontains(normalized_query, autoescape=True),
             )
         )
 

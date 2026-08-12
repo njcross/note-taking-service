@@ -165,7 +165,7 @@ def test_archive_filter_search_and_pagination(
     search = client.get(
         f"/api/v1/teams/{team['id']}/notes",
         headers=auth_headers(owner),
-        params={"query": "launch", "include_archived": True},
+        params={"query": "LAUNCH", "include_archived": True},
     )
     page = client.get(
         f"/api/v1/teams/{team['id']}/notes",
@@ -175,6 +175,15 @@ def test_archive_filter_search_and_pagination(
 
     assert archived.status_code == 200
     assert archived.json()["archived"] is True
+
+    restored = client.patch(
+        f"/api/v1/notes/{first['id']}",
+        headers={**auth_headers(owner), "If-Match": archived.headers["etag"]},
+        json={"archived": False},
+    )
+
+    assert restored.status_code == 200
+    assert restored.json()["archived"] is False
     assert default_list.json()["total"] == 2
     assert search.json()["total"] == 2
     assert page.json()["total"] == 3
