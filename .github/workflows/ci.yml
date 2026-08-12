@@ -1,19 +1,31 @@
-.PHONY: install run test coverage lint format
+name: CI
 
-install:
-	python -m pip install -e ".[dev]"
+on:
+  push:
+  pull_request:
 
-run:
-	uvicorn app.main:app --reload
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-test:
-	python -m pytest
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
 
-coverage:
-	python -m pytest --cov=app --cov-report=term-missing
+      - name: Install dependencies
+        run: python -m pip install -e ".[dev]"
 
-lint:
-	ruff check .
+      - name: Lint
+        run: ruff check .
 
-format:
-	ruff format .
+      - name: Test
+        run: >-
+          python -m pytest
+          --cov=app
+          --cov-report=term-missing
+          --cov-fail-under=90
