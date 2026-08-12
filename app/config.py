@@ -15,8 +15,9 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
+        defaults = cls()
         return cls(
-            app_name=os.getenv("APP_NAME", cls.app_name),
-            database_url=os.getenv("DATABASE_URL", cls.database_url),
+            app_name=os.getenv("APP_NAME", defaults.app_name),
+            database_url=os.getenv("DATABASE_URL", defaults.database_url),
             auto_create_db=os.getenv("AUTO_CREATE_DB", "true").lower() in _TRUE_VALUES,
         )
