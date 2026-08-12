@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import TeamMembership, User, MembershipRole, Note
+from app.models import MembershipRole, Note, TeamMembership, User
 
 DbSession = Annotated[Session, Depends(get_db)]
 def get_current_user(

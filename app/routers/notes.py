@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -148,7 +148,7 @@ def update_note(
             detail="The note has changed; fetch the latest version and retry",
         )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     values: dict[str, object] = {
         "last_edited_by_user_id": current_user.id,
         "updated_at": now,

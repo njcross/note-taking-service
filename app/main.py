@@ -7,7 +7,7 @@ from fastapi import FastAPI
 
 from app.config import Settings
 from app.db import init_db, make_engine, make_session_factory
-from app.routers import health, users, teams, notes
+from app.routers import health, notes, teams, users
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

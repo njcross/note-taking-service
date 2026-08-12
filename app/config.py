@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
-
 _TRUE_VALUES = {"1", "true", "yes", "on"}
 
 
@@ -14,7 +13,7 @@ class Settings:
     auto_create_db: bool = True
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         defaults = cls()
         return cls(
             app_name=os.getenv("APP_NAME", defaults.app_name),
