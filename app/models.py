@@ -61,16 +61,12 @@ class Team(Base):
     memberships: Mapped[list[TeamMembership]] = relationship(
         back_populates="team", cascade="all, delete-orphan"
     )
-    notes: Mapped[list[Note]] = relationship(
-        back_populates="team", cascade="all, delete-orphan"
-    )
+    notes: Mapped[list[Note]] = relationship(back_populates="team", cascade="all, delete-orphan")
 
 
 class TeamMembership(Base):
     __tablename__ = "team_memberships"
-    __table_args__ = (
-        UniqueConstraint("team_id", "user_id", name="uq_team_membership"),
-    )
+    __table_args__ = (UniqueConstraint("team_id", "user_id", name="uq_team_membership"),)
 
     team_id: Mapped[UUID] = mapped_column(
         ForeignKey("teams.id", ondelete="CASCADE"), primary_key=True
@@ -95,6 +91,7 @@ class TeamMembership(Base):
     team: Mapped[Team] = relationship(back_populates="memberships")
     user: Mapped[User] = relationship(back_populates="memberships")
 
+
 class Note(Base):
     __tablename__ = "notes"
     __table_args__ = (
@@ -104,12 +101,8 @@ class Note(Base):
     )
 
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    team_id: Mapped[UUID] = mapped_column(
-        ForeignKey("teams.id", ondelete="CASCADE"), index=True
-    )
-    author_id: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="RESTRICT"), index=True
-    )
+    team_id: Mapped[UUID] = mapped_column(ForeignKey("teams.id", ondelete="CASCADE"), index=True)
+    author_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), index=True)
     last_edited_by_user_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT"), index=True
     )

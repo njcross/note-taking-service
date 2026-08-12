@@ -22,6 +22,7 @@ def client() -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
 
+
 @pytest.fixture
 def create_user(client: TestClient) -> Callable[..., dict[str, Any]]:
     def _create_user(
@@ -36,6 +37,7 @@ def create_user(client: TestClient) -> Callable[..., dict[str, Any]]:
         return response.json()
 
     return _create_user
+
 
 @pytest.fixture
 def auth_headers() -> Callable[[dict[str, Any]], dict[str, str]]:
@@ -61,6 +63,7 @@ def create_team(
 
     return _create_team
 
+
 @pytest.fixture
 def add_member(
     client: TestClient,
@@ -81,6 +84,7 @@ def add_member(
         return response.json()
 
     return _add_member
+
 
 @pytest.fixture
 def create_note(

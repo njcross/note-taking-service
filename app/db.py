@@ -24,6 +24,7 @@ def make_engine(database_url: str) -> Engine:
     engine = create_engine(database_url, **options)
 
     if database_url.startswith("sqlite"):
+
         @event.listens_for(engine, "connect")
         def enable_sqlite_foreign_keys(dbapi_connection: Any, _: Any) -> None:
             cursor = dbapi_connection.cursor()

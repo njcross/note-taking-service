@@ -11,6 +11,8 @@ from app.db import get_db
 from app.models import MembershipRole, Note, TeamMembership, User
 
 DbSession = Annotated[Session, Depends(get_db)]
+
+
 def get_current_user(
     db: DbSession,
     x_user_id: Annotated[UUID | None, Header(alias="X-User-ID")] = None,
@@ -56,6 +58,7 @@ def require_team_membership(
             detail="Your team role does not permit this action",
         )
     return membership
+
 
 def get_note_for_member(db: Session, *, note_id: UUID, user_id: UUID) -> Note:
     note = db.get(Note, note_id)
