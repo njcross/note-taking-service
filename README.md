@@ -198,3 +198,68 @@ membership is the authorization boundary; notes do not carry a separate access-c
 All identifiers are UUIDs. Timestamps are normalized to UTC. Foreign-key enforcement is explicitly
 enabled for SQLite, and note-list indexes cover the common team/update and team/archive access
 patterns.
+
+## Design choices that took the most thought
+
+### 1. Team-first authorization instead of per-note sharing
+
+I modeled access through `TeamMembership` and kept each note owned by one team. Per-note ACLs would
+support more sharing combinations, but they introduce substantially more authorization states,
+queries, and edge cases than this small-team prompt requires. A single team boundary makes the
+rules easy to inspect and test: members can read, owners/editors can write, and only owners can add
+members.
+
+Authorization checks live in shared dependencies rather than being repeated ad hoc in every route.
+For non-members, resource lookups return `404`; this avoids leaking valid team or note IDs.
+
+### 2. A trusted identity header while fully implementing authorization
+
+Implementing secure password reset, token issuance, key rotation, and OAuth correctly would consume
+most of a 3–6 hour exercise without demonstrating much about the note service itself. I therefore
+used `X-User-ID` as an explicit seam for upstream authentication. It is intentionally easy to
+replace with JWT/OIDC middleware later because route code depends on a resolved `CurrentUser`, not
+on the header directly.
+
+The tradeoff is that the service must not be exposed publicly in this form. The README and code call
+that out rather than presenting the header as real security.
+
+### 3. Optimistic concurrency with HTTP ETags
+
+Shared notes create a lost-update risk even for small teams. Locking a note while someone edits it
+would require sessions, timeouts, and cleanup behavior. Instead, each note has an integer version.
+Reads return that version as an ETag, and updates require `If-Match`.
+
+The database update includes the expected version in its `WHERE` clause, so the final check is
+atomic rather than only an application-level comparison. A stale update receives `412 Precondition
+Failed`. This adds modest client responsibility but prevents silent data loss without introducing a
+locking subsystem.
+
+## What I would change, add, or stop doing with more time
+
+**Change:** move production storage to PostgreSQL, add Alembic migrations, replace offset pagination
+with a stable cursor, and use database full-text search instead of `contains` queries. SQLite remains
+the default here because it makes reviewer setup nearly zero-friction.
+
+**Add:** OIDC/JWT authentication, invitation and member-removal flows, role changes, note revision
+history, audit events, structured logging, request IDs, metrics, rate limiting, and PostgreSQL
+integration tests. I would also add load tests around team note listing and concurrent updates.
+
+**Stop doing:** disable automatic schema creation, remove public user creation, and stop trusting a
+caller-supplied identity header once an authentication provider and migration workflow are in place.
+I would also avoid permanent note deletion until retention and recovery requirements were explicit;
+this version uses reversible archiving instead.
+
+## Repository layout
+
+```text
+app/
+  config.py          Environment-backed settings
+  db.py              Engine, sessions, foreign keys, schema initialization
+  dependencies.py    Identity and shared authorization checks
+  models.py          SQLAlchemy entities and UTC timestamp type
+  schemas.py         Request and response contracts
+  routers/           Health, users, teams, and notes endpoints
+tests/                API-level behavior and authorization tests
+.github/workflows/    CI configuration
+Dockerfile            Non-root production-style container
+docker-compose.yml    One-command local container run
