@@ -20,6 +20,7 @@ def test_create_user_normalizes_input(client: TestClient) -> None:
     assert response.status_code == 201
     assert response.json()["email"] == "alice@example.com"
     assert response.json()["display_name"] == "Alice Example"
+    assert response.json()["created_at"].endswith("Z")
 
 
 def test_duplicate_email_is_conflict(

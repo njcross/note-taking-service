@@ -175,6 +175,7 @@ def test_archive_filter_search_and_pagination(
 
     assert archived.status_code == 200
     assert archived.json()["archived"] is True
+    assert archived.json()["updated_at"].endswith("Z")
 
     restored = client.patch(
         f"/api/v1/notes/{first['id']}",
