@@ -94,3 +94,38 @@ class TeamMembership(Base):
 
     team: Mapped[Team] = relationship(back_populates="memberships")
     user: Mapped[User] = relationship(back_populates="memberships")
+
+class Note(Base):
+    __tablename__ = "notes"
+    __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_note_version_positive"),
+        Index("ix_notes_team_updated", "team_id", "updated_at", "id"),
+        Index("ix_notes_team_archived", "team_id", "archived_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    team_id: Mapped[UUID] = mapped_column(
+        ForeignKey("teams.id", ondelete="CASCADE"), index=True
+    )
+    author_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), index=True
+    )
+    last_edited_by_user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(200))
+    body: Mapped[str] = mapped_column(Text, default="")
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, nullable=False
+    )
+
+    team: Mapped[Team] = relationship(back_populates="notes")
+
+    @property
+    def archived(self) -> bool:
+        return self.archived_at is not None
