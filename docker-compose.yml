@@ -1,0 +1,13 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite+pysqlite:////data/team_notes.db
+      AUTO_CREATE_DB: "true"
+    volumes:
+      - team_notes_data:/data
+
+volumes:
+  team_notes_data:
